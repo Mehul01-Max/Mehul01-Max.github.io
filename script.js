@@ -78,19 +78,32 @@ function makeDraggable(element) {
     let isDragging = false;
     let offsetX, offsetY;
 
-    element.addEventListener('mousedown', (e) => {
+    const startDrag = (e) => {
         isDragging = true;
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
-    });
+        // For touch events, we get the touch position.
+        if (e.type === "touchstart") {
+            offsetX = e.touches[0].offsetX;
+            offsetY = e.touches[0].offsetY;
+        } else { // For mouse events.
+            offsetX = e.offsetX;
+            offsetY = e.offsetY;
+        }
+    };
 
-    document.addEventListener('mousemove', (e) => {
+    const drag = (e) => {
         if (isDragging) {
             const canvasWrapper = document.querySelector('#canvasWrapper');
             const wrapperRect = canvasWrapper.getBoundingClientRect();
 
-            const mouseX = e.clientX - wrapperRect.left - offsetX;
-            const mouseY = e.clientY - wrapperRect.top - offsetY;
+            let mouseX, mouseY;
+
+            if (e.type === "touchmove") {
+                mouseX = e.touches[0].clientX - wrapperRect.left - offsetX;
+                mouseY = e.touches[0].clientY - wrapperRect.top - offsetY;
+            } else {
+                mouseX = e.clientX - wrapperRect.left - offsetX;
+                mouseY = e.clientY - wrapperRect.top - offsetY;
+            }
 
             const maxX = canvasWrapper.clientWidth - element.offsetWidth;
             const maxY = canvasWrapper.clientHeight - element.offsetHeight;
@@ -101,12 +114,20 @@ function makeDraggable(element) {
             element.style.left = `${newX}px`;
             element.style.top = `${newY}px`;
         }
-    });
+    };
 
-    document.addEventListener('mouseup', () => {
+    const endDrag = () => {
         isDragging = false;
-    });
+    };
+
+    element.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', endDrag);
+    element.addEventListener('touchstart', startDrag);
+    document.addEventListener('touchmove', drag);
+    document.addEventListener('touchend', endDrag);
 }
+
 document.addEventListener('keyup', (e) => {
     if (e.key === 'Backspace' && selectedTextBox) {
         selectedTextBox.remove();
