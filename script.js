@@ -67,6 +67,11 @@ addTextBoxBtn.addEventListener('click', () => {
         textBoxContent.focus();
         e.stopPropagation();
     });
+    textBoxContent.addEventListener('touchend', (e) => {
+        textBoxContent.contentEditable = true;
+        textBoxContent.focus();
+        e.stopPropagation();
+    });
     document.addEventListener('click', () => {
         if (textBoxContent.contentEditable === "true") {
             textBoxContent.contentEditable = false;
