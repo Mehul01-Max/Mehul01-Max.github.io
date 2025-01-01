@@ -22,8 +22,6 @@ addImageBtn.addEventListener('change', (event) => {
                 const x = (canvas.width - imgWidth * scale) / 2;
                 const y = (canvas.height - imgHeight * scale) / 2;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                console.log(imgWidth * scale);
-                console.log(imgHeight * scale);
                 ctx.drawImage(image, 0, 0, imgWidth, imgHeight, x, y, imgWidth * scale, imgHeight * scale);
                 uploadedImage = image;
             }
@@ -144,20 +142,32 @@ document.addEventListener('keyup', (e) => {
         selectedTextBox = null;
     }
 });
+const canvasWrapper = document.querySelector('#canvasWrapper'); // Ensure canvasWrapper is accessible
+
 function drawCanvas() {
-    // uploadedImage = image.
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before redrawing
+
+    // Draw the uploaded image if there is one
     if (uploadedImage) {
-        ctx.drawImage(uploadedImage, 0, 0, canvas.width, canvas.height);
-    } else {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const imgWidth = uploadedImage.width;
+        const imgHeight = uploadedImage.height;
+        const scaleY = canvas.height / imgHeight;
+        const scaleX = canvas.width / imgWidth;
+        const scale = Math.min(scaleX, scaleY);
+        const x = (canvas.width - imgWidth * scale) / 2;
+        const y = (canvas.height - imgHeight * scale) / 2;
+        ctx.drawImage(uploadedImage, 0, 0, imgWidth, imgHeight, x, y, imgWidth * scale, imgHeight * scale);
     }
 
+    // Draw the text boxes with correct position scaling
     const textBoxes = document.querySelectorAll('.text-box');
     textBoxes.forEach((box) => {
         const rect = box.getBoundingClientRect();
-        const canvasRect = canvas.getBoundingClientRect();
-        const x = rect.left - canvasRect.left;
-        const y = rect.top - canvasRect.top + 20;
+        const wrapperRect = canvasWrapper.getBoundingClientRect();
+
+        // Adjust the position of the text box based on the canvas wrapper
+        const x = (rect.left - wrapperRect.left) * (canvas.width / wrapperRect.width);
+        const y = (rect.top - wrapperRect.top) * (canvas.height / wrapperRect.height) + 20;
 
         ctx.fillStyle = 'black';
         ctx.font = '20px Arial';
@@ -165,6 +175,17 @@ function drawCanvas() {
     });
 }
 
+// Ensure the canvas dimensions adjust based on the window size
+function resizeCanvas() {
+    const wrapperRect = canvasWrapper.getBoundingClientRect();
+    canvas.width = wrapperRect.width;
+    canvas.height = wrapperRect.height;
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas(); // Initialize the canvas size on page load
+
+// Call drawCanvas() after elements are added or modified
 downloadBtn.addEventListener('click', () => {
     drawCanvas();
     const link = document.createElement('a');
@@ -172,5 +193,6 @@ downloadBtn.addEventListener('click', () => {
     link.href = canvas.toDataURL();
     link.click();
 });
+
 
 
