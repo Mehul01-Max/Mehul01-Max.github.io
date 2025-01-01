@@ -56,7 +56,6 @@ addTextBoxBtn.addEventListener('click', () => {
         e.stopPropagation();
     });
     textBoxWrapper.addEventListener('mouseleave', () => {
-        console.log("hellow");
         if (selectedTextBox) {
             selectedTextBox.classList.remove('selected');
             selectedTextBox = null;
@@ -76,39 +75,38 @@ addTextBoxBtn.addEventListener('click', () => {
 });
 function makeDraggable(element) {
     let isDragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
+    let offsetX, offsetY;
 
     const startDrag = (e) => {
         isDragging = true;
-        // For touch events, use the first touch point
-        if (e.type === 'touchstart') {
-            offsetX = e.touches[0].clientX - element.getBoundingClientRect().left;
-            offsetY = e.touches[0].clientY - element.getBoundingClientRect().top;
-        } else { // For mouse events
-            offsetX = e.clientX - element.getBoundingClientRect().left;
-            offsetY = e.clientY - element.getBoundingClientRect().top;
+        // For touch events, we get the touch position.
+        if (e.type === "touchstart") {
+            offsetX = e.touches[0].radiusX;
+            offsetY = e.touches[0].radiusY;
+            console.log(e);
+        } else { // For mouse events.
+            offsetX = e.offsetX;
+            offsetY = e.offsetY;
+            console.log(e);
         }
-        e.preventDefault(); // Prevent default behavior (important for mobile)
+        e.preventDefault();
     };
 
     const drag = (e) => {
+
         if (isDragging) {
-            let mouseX, mouseY;
-
-            // For touch events
-            if (e.type === 'touchmove') {
-                mouseX = e.touches[0].clientX - offsetX;
-                mouseY = e.touches[0].clientY - offsetY;
-            } else { // For mouse events
-                mouseX = e.clientX - offsetX;
-                mouseY = e.clientY - offsetY;
-            }
-
             const canvasWrapper = document.querySelector('#canvasWrapper');
             const wrapperRect = canvasWrapper.getBoundingClientRect();
 
-            // Ensure dragging stays within canvas bounds
+            let mouseX, mouseY;
+
+            if (e.type === "touchmove") {
+                mouseX = e.touches[0].clientX - wrapperRect.left - offsetX;
+                mouseY = e.touches[0].clientY - wrapperRect.top - offsetY;
+            } else {
+                mouseX = e.clientX - wrapperRect.left - offsetX;
+                mouseY = e.clientY - wrapperRect.top - offsetY;
+            }
             const maxX = canvasWrapper.clientWidth - element.offsetWidth;
             const maxY = canvasWrapper.clientHeight - element.offsetHeight;
 
@@ -124,15 +122,15 @@ function makeDraggable(element) {
         isDragging = false;
     };
 
-    // Add mouse event listeners for desktop
     element.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', endDrag);
-
-    // Add touch event listeners for mobile
     element.addEventListener('touchstart', startDrag, { passive: false });
     document.addEventListener('touchmove', drag, { passive: false });
     document.addEventListener('touchend', endDrag);
+    
+    // Disable touch actions like scrolling while dragging
+    element.style.touchAction = 'none';
 }
 
 document.addEventListener('keyup', (e) => {
@@ -141,7 +139,6 @@ document.addEventListener('keyup', (e) => {
         selectedTextBox = null;
     }
 });
-
 function drawCanvas() {
     // uploadedImage = image.
     if (uploadedImage) {
