@@ -135,13 +135,6 @@ function makeDraggable(element) {
     // Disable touch actions like scrolling while dragging
     element.style.touchAction = 'none';
 }
-
-document.addEventListener('keyup', (e) => {
-    if (e.key === 'Backspace' && selectedTextBox) {
-        selectedTextBox.remove();
-        selectedTextBox = null;
-    }
-});
 const canvasWrapper = document.querySelector('#canvasWrapper'); // Ensure canvasWrapper is accessible
 
 function drawCanvas() {
